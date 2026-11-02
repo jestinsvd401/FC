@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { ChatMessageRecord, ChatSessionRecord } from "@/types/support";
 
-function eveningOrWeekend(date = new Date()) {
+function isEveningOrWeekend(date: Date) {
   const hour = date.getHours();
   const day = date.getDay();
   return day === 0 || day === 6 || hour >= 18 || hour < 8;
@@ -16,7 +16,11 @@ export function AnonymousChat() {
   const [messages, setMessages] = useState<ChatMessageRecord[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
-  const offHours = !eveningOrWeekend();
+  const [offHours, setOffHours] = useState(false);
+
+  useEffect(() => {
+    setOffHours(!isEveningOrWeekend(new Date()));
+  }, []);
 
   useEffect(() => {
     if (!session) return;
