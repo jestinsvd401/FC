@@ -5,6 +5,9 @@ import { ChevronDown, Factory, Fish, HeartHandshake } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { parseGuideContent } from "@/lib/guide-content";
 import type { GuideRecord, Industry } from "@/types/catalog";
+import { CardSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 const INDUSTRY_META: Record<
   Industry,
@@ -77,8 +80,9 @@ export function SafetyGuides() {
         <h1 className="text-3xl font-black text-zinc-950">{dictionary.nav.safetyGuides}</h1>
         <p className="mt-2 text-lg font-semibold">{dictionary.safety.intro}</p>
       </div>
-      {loading && industryGuides.length === 0 ? (
-        <p className="font-bold">{dictionary.common.loading}</p>
+      {loading && industryGuides.length === 0 ? <CardSkeleton /> : null}
+      {!loading && industryGuides.length === 0 ? (
+        <EmptyState title={dictionary.common.noResults} />
       ) : null}
       <ul className="grid gap-4">
         {industryGuides.map(({ guide, parsed }) => {
@@ -138,9 +142,7 @@ export function SafetyGuides() {
           );
         })}
       </ul>
-      {error ? (
-        <p className="font-bold text-red-700">{dictionary.common.error}</p>
-      ) : null}
+      {error ? <ErrorState message={dictionary.common.error} /> : null}
     </div>
   );
 }

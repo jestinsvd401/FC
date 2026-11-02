@@ -1,10 +1,23 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { listGuides } from "@/lib/data";
+import { jsonError } from "@/lib/http";
+
+const querySchema = z.object({
+  category: z.enum(["HEALTH", "SAFETY", "HOME_COUNTRY"]).optional(),
+  language: z.string().max(12).optional(),
+});
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const category = searchParams.get("category") ?? undefined;
-  const language = searchParams.get("language") ?? undefined;
-  const { guides, source } = await listGuides({ category, language });
-  return NextResponse.json({ guides, source });
+  try {
+    const parsed = querySchema.safeParse(
+      Object.fromEntries(new URL(request.url).searchParams.entries()),
+    );
+    if (!parsed.success) return jsonError("Validation failed", 400);
+    const { guides, source } = await listGuides(parsed.data);
+    return NextResponse.json({ guides, source });
+  } catch (error) {
+    console.error(error);
+    return jsonError("Could not load guides", 500);
+  }
 }

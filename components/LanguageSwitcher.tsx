@@ -12,7 +12,7 @@ export function LanguageSwitcher() {
       <select
         value={locale}
         onChange={(event) => setLocale(event.target.value as typeof locale)}
-        className="min-h-12 min-w-[10.5rem] cursor-pointer rounded-xl border-2 border-zinc-900 bg-white px-3 text-base font-semibold text-zinc-950 shadow-[2px_2px_0_#18181b]"
+        className="min-h-12 w-[7.5rem] cursor-pointer rounded-xl border-2 border-zinc-900 bg-white px-2 text-sm font-semibold text-zinc-950 shadow-[2px_2px_0_#18181b] sm:w-[10.5rem] sm:px-3 sm:text-base"
         aria-label={dictionary.language}
       >
         {LOCALES.map((code) => (

@@ -1,85 +1,74 @@
 # Migrant Helpdesk
 
-Next.js (App Router) helpdesk for migrant workers in Taiwan: emergency hotlines, anonymous support chat, health navigation, and workplace safety guides.
+Next.js (App Router) helpdesk for migrant workers in Taiwan: emergency hotlines, anonymous chat, health navigation, workplace safety, self-check, community, and home-country guides. Staff use `/admin` (ADMIN role only).
 
-Stack: **Next.js 16**, **TypeScript**, **Tailwind CSS**, **Prisma** (PostgreSQL), **lucide-react**.
+Stack: **Next.js 16**, **TypeScript**, **Tailwind CSS**, **Prisma** (PostgreSQL), **Zod**, **React Hook Form**, **lucide-react**.
+
+## Environment variables
+
+Copy `.env.example` to `.env` (never commit secrets):
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | For persist | Postgres connection string (local or Supabase) |
+| `ADMIN_DEMO_PASSWORD` | No (default `helpdesk-admin`) | Password for `admin@example.com` staff login |
+
+Without a reachable Postgres, APIs still run using the in-repo catalog / memory fallback so the UI can be previewed.
 
 ## Local setup
 
-### 1. Install
-
 ```bash
 npm install
-```
-
-`postinstall` runs `prisma generate`.
-
-### 2. Postgres
-
-Create a database, then copy the example env file:
-
-```bash
 cp .env.example .env
-```
-
-Set `DATABASE_URL` in `.env` (do not commit secrets):
-
-```
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/migrant_helpdesk?schema=public"
-```
-
-### 3. Migrate and seed
-
-```bash
+# set DATABASE_URL
 npx prisma migrate dev
 npm run db:seed
-```
-
-The initial migration lives at `prisma/migrations/20261102120000_init/`. If `migrate dev` cannot reach Postgres, you can still apply that SQL later:
-
-```bash
-npx prisma migrate deploy
-npx prisma generate
-npm run db:seed
-```
-
-To recreate the SQL from the schema without a live database:
-
-```bash
-npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script
-```
-
-### 4. Run the app
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). Staff: [http://localhost:3000/admin/login](http://localhost:3000/admin/login) — `admin@example.com` / `helpdesk-admin`.
 
-### Typecheck
+If Postgres is down:
+
+```bash
+npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script
+npx prisma generate
+npm run dev
+```
+
+Apply SQL later with `npx prisma migrate deploy` then `npm run db:seed`.
 
 ```bash
 npm run typecheck
 ```
 
+## Deploy: Vercel + Supabase
+
+1. Create a **Supabase** project → **Project Settings → Database**. Copy the URI (use the pooled connection on port `6543` with `?pgbouncer=true` for serverless, or the direct URI for migrations).
+2. From your machine (direct URI): `npx prisma migrate deploy` and `npm run db:seed`.
+3. On **Vercel**: import the GitHub repo, set **Root Directory** to the app root, add env vars:
+   - `DATABASE_URL` = Supabase URI
+   - `ADMIN_DEMO_PASSWORD` = a strong password
+4. Deploy. `postinstall` runs `prisma generate`; `npm run build` generates the client then builds Next.js.
+5. Open `/admin/login` on the production domain.
+
+Anonymous `vercel deploy --temporary` previews work without login but expire (~60 minutes) and use catalog fallback unless `DATABASE_URL` is set.
+
 ## Scripts
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Next.js dev server |
-| `npm run build` | `prisma generate` then production build |
+| `npm run dev` | Dev server |
+| `npm run build` | `prisma generate` + production build |
 | `npm start` | Production server |
-| `npm run db:seed` | Load sample clinics, guides, and users |
+| `npm run db:seed` | Sample clinics, guides, users |
 | `npm run typecheck` | `tsc --noEmit` |
 
-## Project layout
+## Layout
 
-Health (`/health`) and Safety (`/safety`) load clinics and guides from `/api/clinics` and `/api/guides`. Those routes query Postgres via Prisma and fall back to the seeded catalog if the database is unreachable.
-
-- `app/` — App Router pages and `app/api/` routes
-- `components/` — Header, bottom nav, dashboard cards, i18n provider
-- `dictionaries/` — UI strings (en, zh-TW, id, vi, tl, th)
-- `lib/` — Prisma client
-- `prisma/` — schema, migrations, seed
-- `types/` — shared TypeScript types
+- `app/` pages and `app/api/` routes (Zod-validated)
+- `app/admin/` RBAC back-office (`middleware.ts` requires `mh_role=ADMIN`)
+- `components/` UI, i18n provider, admin CRUD
+- `dictionaries/` en, zh-TW, id, vi, tl, th
+- `lib/` Prisma, catalogs, admin/support data
+- `prisma/` schema, migrations, seed

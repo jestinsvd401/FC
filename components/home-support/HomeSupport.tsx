@@ -4,20 +4,32 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { parseGuideContent } from "@/lib/guide-content";
 import type { GuideRecord, HomeGuideContent } from "@/types/catalog";
+import { CardSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 export function HomeSupport() {
   const { dictionary, locale } = useLanguage();
   const [guides, setGuides] = useState<GuideRecord[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams({
       category: "HOME_COUNTRY",
       language: locale,
     });
+    setLoading(true);
+    setError(false);
     void fetch(`/api/guides?${params.toString()}`)
-      .then((response) => response.json() as Promise<{ guides: GuideRecord[] }>)
-      .then((data) => setGuides(data.guides ?? []));
+      .then((response) => {
+        if (!response.ok) throw new Error("guides");
+        return response.json() as Promise<{ guides: GuideRecord[] }>;
+      })
+      .then((data) => setGuides(data.guides ?? []))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, [locale]);
 
   const cards = guides
@@ -32,6 +44,11 @@ export function HomeSupport() {
     <div className="space-y-6">
       <h1 className="text-3xl font-black">{dictionary.homeSupport.title}</h1>
       <p className="text-lg font-semibold">{dictionary.homeSupport.intro}</p>
+      {loading ? <CardSkeleton /> : null}
+      {error ? <ErrorState message={dictionary.common.error} /> : null}
+      {!loading && !error && cards.length === 0 ? (
+        <EmptyState title={dictionary.common.noResults} />
+      ) : null}
       <ul className="grid gap-4">
         {cards.map(({ guide, parsed }) => (
           <li key={guide.id}>

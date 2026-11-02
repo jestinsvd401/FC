@@ -47,7 +47,7 @@ export function BottomNav() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-center text-[11px] font-bold leading-tight sm:text-xs ${
+                  className={`flex min-h-16 flex-col items-center justify-center gap-0.5 px-0.5 text-center text-[10px] font-bold leading-tight min-[360px]:text-[11px] sm:text-xs ${
                   active ? "bg-amber-300 text-zinc-950" : "text-white"
                 }`}
               >

@@ -15,6 +15,7 @@ import { parseGuideContent } from "@/lib/guide-content";
 import { SYMPTOMS } from "@/lib/symptoms";
 import type { ClinicRecord, GuideRecord } from "@/types/catalog";
 import { LOCALES, LOCALE_LABELS } from "@/types/i18n";
+import { CardSkeleton } from "@/components/ui/Skeleton";
 
 const NHI_ICONS = [ShieldPlus, CreditCard, Hospital, PhoneCall] as const;
 
@@ -101,8 +102,11 @@ export function HealthNav() {
 
       <section className="space-y-3">
         <h2 className="text-xl font-black">{dictionary.health.nhiTitle}</h2>
-        {loading && nhiCards.length === 0 ? (
-          <p className="font-bold">{dictionary.common.loading}</p>
+        {loading && nhiCards.length === 0 ? <CardSkeleton /> : null}
+        {!loading && nhiCards.length === 0 ? (
+          <p className="rounded-2xl border-4 border-dashed border-zinc-950 bg-white p-4 font-bold">
+            {dictionary.common.noResults}
+          </p>
         ) : null}
         <div className="grid gap-3">
           {nhiCards.map((card, index) => {

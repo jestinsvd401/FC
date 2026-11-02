@@ -1,23 +1,24 @@
 import { NextResponse } from "next/server";
+import { checkInSchema } from "@/lib/admin-schemas";
+import { jsonError, readJson } from "@/lib/http";
 import { listCheckIns, saveCheckIn } from "@/lib/support-data";
 
 export async function GET() {
-  const result = await listCheckIns();
-  return NextResponse.json(result);
+  try {
+    return NextResponse.json(await listCheckIns());
+  } catch (error) {
+    console.error(error);
+    return jsonError("Could not load check-ins", 500);
+  }
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as {
-    moodScore?: number;
-    stressLevel?: number;
-    notes?: string;
-    language?: string;
-  };
-  const result = await saveCheckIn({
-    moodScore: Number(body.moodScore) || 3,
-    stressLevel: Number(body.stressLevel) || 3,
-    notes: body.notes ?? "",
-    language: body.language ?? "en",
-  });
-  return NextResponse.json(result);
+  try {
+    const parsed = await readJson(request, checkInSchema);
+    if ("error" in parsed) return parsed.error;
+    return NextResponse.json(await saveCheckIn(parsed.data));
+  } catch (error) {
+    console.error(error);
+    return jsonError("Could not save check-in", 500);
+  }
 }

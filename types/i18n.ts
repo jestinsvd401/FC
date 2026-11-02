@@ -113,6 +113,31 @@ export type Dictionary = {
     homeCountry: string;
     homeCountryHint: string;
   };
+  admin: {
+    dashboard: string;
+    clinics: string;
+    guides: string;
+    users: string;
+    login: string;
+    logout: string;
+    loginTitle: string;
+    loginHint: string;
+    loginFailed: string;
+    activeChats: string;
+    checkIns: string;
+    clinicCount: string;
+    add: string;
+    edit: string;
+    save: string;
+    delete: string;
+    prev: string;
+    next: string;
+    name: string;
+    address: string;
+    phone: string;
+    title: string;
+    staff: string;
+  };
 };
 
 export const LOCALE_LABELS: Record<Locale, string> = {
