@@ -23,6 +23,13 @@ export type IndustryGuideContent = {
   steps: string[];
 };
 
+export type HomeGuideContent = {
+  kind: "home";
+  country: "id" | "vn" | "ph" | "th";
+  countryName: string;
+  faqs: { topic: string; question: string; answer: string }[];
+};
+
 export type GuideRecord = {
   id: string;
   category: "HEALTH" | "SAFETY" | "HOME_COUNTRY";

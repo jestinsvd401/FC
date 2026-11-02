@@ -1,11 +1,13 @@
 "use client";
 
 import {
+  Globe,
   HeartPulse,
   Hospital,
   MessageCircle,
   PhoneCall,
   ShieldCheck,
+  Users,
 } from "lucide-react";
 import { DashboardCard } from "@/components/DashboardCard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -63,6 +65,20 @@ export default function HomePage() {
           icon={ShieldCheck}
           title={dictionary.home.workplaceSafety}
           hint={dictionary.home.workplaceSafetyHint}
+        />
+        <DashboardCard
+          href="/community"
+          tone="community"
+          icon={Users}
+          title={dictionary.extra.community}
+          hint={dictionary.extra.communityHint}
+        />
+        <DashboardCard
+          href="/home-support"
+          tone="home"
+          icon={Globe}
+          title={dictionary.extra.homeCountry}
+          hint={dictionary.extra.homeCountryHint}
         />
       </section>
     </div>

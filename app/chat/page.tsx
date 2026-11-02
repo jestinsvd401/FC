@@ -1,7 +1,7 @@
 "use client";
 
-import { PlaceholderPage } from "@/components/PlaceholderPage";
+import { AnonymousChat } from "@/components/chat/AnonymousChat";
 
 export default function ChatPage() {
-  return <PlaceholderPage title={(d) => d.nav.supportChat} />;
+  return <AnonymousChat />;
 }

@@ -6,7 +6,7 @@ type DashboardCardProps = {
   title: string;
   hint: string;
   icon: LucideIcon;
-  tone: "emergency" | "chat" | "check" | "health" | "safety";
+  tone: "emergency" | "chat" | "check" | "health" | "safety" | "community" | "home";
   external?: boolean;
 };
 
@@ -33,6 +33,14 @@ const tones: Record<
   safety: {
     card: "bg-zinc-950 text-amber-300",
     iconWrap: "bg-amber-300 text-zinc-950",
+  },
+  community: {
+    card: "bg-violet-800 text-white",
+    iconWrap: "bg-white text-violet-800",
+  },
+  home: {
+    card: "bg-orange-700 text-white",
+    iconWrap: "bg-white text-orange-800",
   },
 };
 

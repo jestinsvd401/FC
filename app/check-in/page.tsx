@@ -1,7 +1,7 @@
 "use client";
 
-import { PlaceholderPage } from "@/components/PlaceholderPage";
+import { SelfCheck } from "@/components/check-in/SelfCheck";
 
 export default function CheckInPage() {
-  return <PlaceholderPage title={(d) => d.home.selfCheck} />;
+  return <SelfCheck />;
 }

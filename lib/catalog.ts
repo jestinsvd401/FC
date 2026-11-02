@@ -1,3 +1,4 @@
+import { homeCountryGuides } from "@/lib/home-country";
 import type { ClinicRecord, GuideRecord, Industry } from "@/types/catalog";
 import type { Locale } from "@/types/i18n";
 import { LOCALES } from "@/types/i18n";
@@ -458,7 +459,11 @@ function industryGuides(): GuideRecord[] {
   });
 }
 
-export const GUIDES: GuideRecord[] = [...nhiGuides(), ...industryGuides()];
+export const GUIDES: GuideRecord[] = [
+  ...nhiGuides(),
+  ...industryGuides(),
+  ...homeCountryGuides(),
+];
 
 export function filterClinics(options: {
   q?: string;
