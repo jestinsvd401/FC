@@ -47,8 +47,10 @@ export function BottomNav() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                  className={`flex min-h-16 flex-col items-center justify-center gap-0.5 px-0.5 text-center text-[10px] font-bold leading-tight min-[360px]:text-[11px] sm:text-xs ${
-                  active ? "bg-amber-300 text-zinc-950" : "text-white"
+                  className={`group flex min-h-16 flex-col items-center justify-center gap-0.5 px-0.5 text-center text-[10px] font-bold leading-tight min-[360px]:text-[11px] sm:text-xs ${
+                  active
+                    ? "bg-amber-300 text-zinc-950"
+                    : "text-white hover:bg-zinc-800 hover:text-amber-300"
                 }`}
               >
                 <Icon className="size-6" strokeWidth={2.4} aria-hidden />

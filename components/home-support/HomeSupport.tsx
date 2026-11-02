@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Globe } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { parseGuideContent } from "@/lib/guide-content";
 import type { GuideRecord, HomeGuideContent } from "@/types/catalog";
@@ -56,9 +57,12 @@ export function HomeSupport() {
               <button
                 type="button"
                 onClick={() => setOpenId(openId === guide.id ? null : guide.id)}
-                className="flex min-h-20 w-full items-center justify-between px-4 py-4 text-left text-2xl font-black"
+                className="group flex min-h-20 w-full items-center justify-between gap-3 px-4 py-4 text-left text-2xl font-black"
               >
-                {parsed.countryName}
+                <span className="flex min-w-0 items-center gap-3">
+                  <Globe className="size-8 shrink-0" strokeWidth={2.5} aria-hidden />
+                  {parsed.countryName}
+                </span>
               </button>
               {openId === guide.id ? (
                 <div className="space-y-3 border-t-4 border-zinc-950 bg-white p-4 text-zinc-950">

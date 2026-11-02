@@ -96,7 +96,7 @@ export function SafetyGuides() {
                   type="button"
                   aria-expanded={open}
                   onClick={() => setOpenId(open ? null : guide.id)}
-                  className="flex min-h-24 w-full items-center gap-4 px-4 py-4 text-left"
+                  className="group flex min-h-24 w-full items-center gap-4 px-4 py-4 text-left"
                 >
                   <span
                     className={`flex size-16 shrink-0 items-center justify-center rounded-2xl border-4 border-zinc-950 ${meta.iconWrap}`}
@@ -113,7 +113,7 @@ export function SafetyGuides() {
                     </span>
                   </span>
                   <ChevronDown
-                    className={`size-8 shrink-0 transition ${open ? "rotate-180" : ""}`}
+                    className={`mh-icon-chevron size-8 shrink-0 transition ${open ? "rotate-180" : "group-hover:translate-y-0.5"}`}
                     aria-hidden
                   />
                 </button>

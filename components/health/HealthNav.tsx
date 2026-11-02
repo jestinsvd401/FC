@@ -114,7 +114,7 @@ export function HealthNav() {
             return (
               <article
                 key={card.guide.id}
-                className="rounded-2xl border-4 border-zinc-950 bg-sky-700 p-4 text-white shadow-[4px_4px_0_#09090b]"
+                className="group rounded-2xl border-4 border-zinc-950 bg-sky-700 p-4 text-white shadow-[4px_4px_0_#09090b]"
               >
                 <div className="flex items-start gap-3">
                   <span className="flex size-12 shrink-0 items-center justify-center rounded-xl border-2 border-zinc-950 bg-white text-sky-800">
@@ -135,7 +135,7 @@ export function HealthNav() {
         <h2 className="text-xl font-black">{dictionary.health.clinicsTitle}</h2>
         <label className="block">
           <span className="sr-only">{dictionary.health.searchClinics}</span>
-          <span className="flex min-h-14 items-center gap-2 rounded-2xl border-4 border-zinc-950 bg-white px-3">
+          <span className="group flex min-h-14 items-center gap-2 rounded-2xl border-4 border-zinc-950 bg-white px-3">
             <Search className="size-6 shrink-0" aria-hidden />
             <input
               value={query}
@@ -149,8 +149,8 @@ export function HealthNav() {
           <button
             type="button"
             onClick={() => setInterpreterOnly((value) => !value)}
-            className={`min-h-12 rounded-xl border-4 border-zinc-950 px-4 text-base font-black ${
-              interpreterOnly ? "bg-amber-300 text-zinc-950" : "bg-white text-zinc-950"
+            className={`group min-h-12 rounded-xl border-4 border-zinc-950 px-4 text-base font-black ${
+              interpreterOnly ? "bg-amber-300 text-zinc-950" : "bg-white text-zinc-950 hover:bg-amber-200"
             }`}
           >
             <Languages className="mr-2 inline size-5" aria-hidden />
@@ -232,7 +232,7 @@ export function HealthNav() {
             <button
               type="button"
               onClick={playMandarin}
-              className="mt-3 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border-4 border-zinc-950 bg-red-600 text-lg font-black text-white"
+              className="group mt-3 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border-4 border-zinc-950 bg-red-600 text-lg font-black text-white hover:bg-red-500"
             >
               <Volume2 className="size-7" aria-hidden />
               {dictionary.health.playMandarin}

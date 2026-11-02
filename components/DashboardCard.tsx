@@ -52,7 +52,7 @@ export function DashboardCard({
   tone,
   external,
 }: DashboardCardProps) {
-  const className = `flex min-h-[6.5rem] items-center gap-4 rounded-2xl border-4 border-zinc-950 px-4 py-4 shadow-[4px_4px_0_#09090b] ${tones[tone].card}`;
+  const className = `group flex min-h-[6.5rem] items-center gap-4 rounded-2xl border-4 border-zinc-950 px-4 py-4 shadow-[4px_4px_0_#09090b] transition hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#09090b] ${tones[tone].card}`;
 
   const content = (
     <>

@@ -13,7 +13,7 @@ export function Header() {
       <div className="mx-auto flex max-w-3xl min-w-0 items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-4">
         <Link
           href="/"
-          className="flex min-h-12 min-w-0 items-center gap-2 rounded-xl px-1 text-zinc-950 sm:gap-3"
+          className="group flex min-h-12 min-w-0 items-center gap-2 rounded-xl px-1 text-zinc-950 sm:gap-3"
         >
           <HeartHandshake className="size-7 shrink-0 sm:size-8" strokeWidth={2.4} aria-hidden />
           <span className="truncate text-lg font-black leading-tight tracking-tight sm:text-2xl">

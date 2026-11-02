@@ -36,3 +36,31 @@ body {
 .mh-breathe {
   animation: mh-breathe 8s ease-in-out infinite;
 }
+
+.lucide {
+  transition:
+    transform 160ms ease,
+    filter 160ms ease;
+  transform-origin: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a:hover .lucide:not(.mh-icon-chevron),
+  button:hover .lucide:not(.mh-icon-chevron),
+  label:hover .lucide:not(.mh-icon-chevron),
+  article:hover .lucide:not(.mh-icon-chevron),
+  .group:hover .lucide:not(.mh-icon-chevron) {
+    transform: scale(1.18);
+    filter: drop-shadow(2px 2px 0 #09090b);
+  }
+
+  a:hover .mh-icon-chevron,
+  button:hover .mh-icon-chevron {
+    filter: drop-shadow(2px 2px 0 #09090b);
+  }
+}
+
+a:active .lucide:not(.mh-icon-chevron),
+button:active .lucide:not(.mh-icon-chevron) {
+  transform: scale(1.1);
+}

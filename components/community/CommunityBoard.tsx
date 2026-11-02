@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Calendar, ShieldCheck, Users } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { CommunityEvent, CommunityGroup } from "@/types/support";
 
@@ -70,11 +71,14 @@ export function CommunityBoard() {
             key={key}
             type="button"
             onClick={() => toggle(key)}
-            className={`mt-2 flex min-h-14 w-full items-center justify-between rounded-xl border-4 border-zinc-950 px-4 text-left text-base font-black ${
-              privacy[key] ? "bg-emerald-800 text-white" : "bg-zinc-100 text-zinc-950"
+            className={`group mt-2 flex min-h-14 w-full items-center justify-between rounded-xl border-4 border-zinc-950 px-4 text-left text-base font-black ${
+              privacy[key] ? "bg-emerald-800 text-white" : "bg-zinc-100 text-zinc-950 hover:bg-amber-200"
             }`}
           >
-            <span>{label}</span>
+            <span className="flex min-w-0 items-center gap-2">
+              <ShieldCheck className="size-6 shrink-0" strokeWidth={2.5} aria-hidden />
+              {label}
+            </span>
             <span>{privacy[key] ? dictionary.community.on : dictionary.community.off}</span>
           </button>
         ))}
@@ -85,9 +89,12 @@ export function CommunityBoard() {
         {groups.map((group) => (
           <article
             key={group.id}
-            className="rounded-2xl border-4 border-zinc-950 bg-violet-800 p-4 text-white shadow-[3px_3px_0_#09090b]"
+            className="group rounded-2xl border-4 border-zinc-950 bg-violet-800 p-4 text-white shadow-[3px_3px_0_#09090b]"
           >
-            <h3 className="text-lg font-black">{group.name}</h3>
+            <h3 className="flex items-start gap-2 text-lg font-black">
+              <Users className="mt-0.5 size-6 shrink-0" strokeWidth={2.5} aria-hidden />
+              {group.name}
+            </h3>
             <p className="mt-1 font-semibold">
               {privacy.hideLocation ? dictionary.community.cityHidden : group.city} · {group.interest}
             </p>
@@ -106,9 +113,12 @@ export function CommunityBoard() {
         {events.map((event) => (
           <article
             key={event.id}
-            className="rounded-2xl border-4 border-zinc-950 bg-white p-4 shadow-[3px_3px_0_#09090b]"
+            className="group rounded-2xl border-4 border-zinc-950 bg-white p-4 shadow-[3px_3px_0_#09090b]"
           >
-            <h3 className="text-lg font-black">{event.title}</h3>
+            <h3 className="flex items-start gap-2 text-lg font-black">
+              <Calendar className="mt-0.5 size-6 shrink-0" strokeWidth={2.5} aria-hidden />
+              {event.title}
+            </h3>
             <p className="mt-1 font-semibold">
               {event.when}
               {" · "}
