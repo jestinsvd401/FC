@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  WORKER
+  VOLUNTEER
+  ADMIN
+}
+
+enum GuideCategory {
+  HEALTH
+  SAFETY
+  HOME_COUNTRY
+}
+
+enum ChatStatus {
+  PENDING
+  ACTIVE
+  CLOSED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  role         Role
+  languagePref String   @map("language_pref")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  workerChatSessions    ChatSession[] @relation("ChatSessionWorker")
+  volunteerChatSessions ChatSession[] @relation("ChatSessionVolunteer")
+  checkIns              CheckIn[]
+
+  @@map("users")
+}
+
+model Guide {
+  id        String         @id @default(cuid())
+  category  GuideCategory
+  language  String
+  title     String
+  content   String         @db.Text
+  imageUrl  String?        @map("image_url")
+
+  @@index([category, language])
+  @@map("guides")
+}
+
+model Clinic {
+  id                 String   @id @default(cuid())
+  name               String
+  address            String
+  phone              String
+  hasInterpreter     Boolean  @map("has_interpreter")
+  languagesSupported String[] @map("languages_supported")
+
+  @@map("clinics")
+}
+
+model ChatSession {
+  id          String     @id @default(cuid())
+  workerId    String
+  volunteerId String?
+  status      ChatStatus
+  createdAt   DateTime   @default(now())
+
+  worker    User  @relation("ChatSessionWorker", fields: [workerId], references: [id])
+  volunteer User? @relation("ChatSessionVolunteer", fields: [volunteerId], references: [id])
+
+  @@index([workerId])
+  @@index([volunteerId])
+  @@map("chat_sessions")
+}
+
+model CheckIn {
+  id          String   @id @default(cuid())
+  workerId    String
+  moodScore   Int
+  stressLevel Int
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  worker User @relation(fields: [workerId], references: [id])
+
+  @@index([workerId])
+  @@map("check_ins")
+}
