@@ -27,6 +27,31 @@ const th: Dictionary = {
   pages: {
     comingSoon: "กำลังจัดทำส่วนนี้ ใช้หน้าแรกเพื่อเข้าถึงอย่างรวดเร็ว",
   },
+  common: {
+    search: "ค้นหา",
+    loading: "กำลังโหลด…",
+    error: "โหลดข้อมูลไม่ได้ ลองอีกครั้ง",
+    noResults: "ไม่พบคลินิกที่ตรงเงื่อนไข",
+    allLanguages: "ทุกภาษา",
+    call: "โทร",
+  },
+  health: {
+    nhiTitle: "สิทธิ NHI",
+    clinicsTitle: "รายชื่อคลินิก",
+    searchClinics: "ค้นหาคลินิกตามชื่อหรือเมือง",
+    interpreterOnly: "มีล่าม",
+    filterLanguage: "กรองตามภาษา",
+    hasInterpreter: "มีล่าม",
+    noInterpreter: "ไม่มีล่ามในรายการ",
+    symptomsTitle: "การ์ดแปลอาการ",
+    symptomsHint: "เลือกอาการในภาษาของคุณ แล้วแสดงหรือเล่นภาษาจีนกลางที่คลินิก",
+    sayThis: "พูดประโยคนี้เป็นภาษาจีนกลาง",
+    playMandarin: "เล่นเสียงอ่าน",
+  },
+  safety: {
+    intro: "เปิดการ์ดประเภทงานเพื่อดูคำแนะนำความปลอดภัยทีละขั้น",
+    steps: "ขั้นตอน",
+  },
 };
 
 export default th;

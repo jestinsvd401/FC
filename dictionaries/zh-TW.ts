@@ -27,6 +27,31 @@ const zhTW: Dictionary = {
   pages: {
     comingSoon: "此頁面建置中。請先回到首頁使用快捷入口。",
   },
+  common: {
+    search: "搜尋",
+    loading: "載入中…",
+    error: "資料載入失敗，請再試一次。",
+    noResults: "沒有符合條件的診所。",
+    allLanguages: "所有語言",
+    call: "撥打",
+  },
+  health: {
+    nhiTitle: "健保說明",
+    clinicsTitle: "診所名錄",
+    searchClinics: "用名稱或城市搜尋診所",
+    interpreterOnly: "有通譯",
+    filterLanguage: "依語言篩選",
+    hasInterpreter: "有通譯",
+    noInterpreter: "未列出通譯",
+    symptomsTitle: "症狀翻譯卡",
+    symptomsHint: "用母語點選症狀，再顯示或播放華語給醫護人員聽。",
+    sayThis: "請用華語說",
+    playMandarin: "播放發音",
+  },
+  safety: {
+    intro: "點開工種卡片，查看逐步安全指示。",
+    steps: "步驟",
+  },
 };
 
 export default zhTW;

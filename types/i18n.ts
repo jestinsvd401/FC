@@ -29,6 +29,31 @@ export type Dictionary = {
   pages: {
     comingSoon: string;
   };
+  common: {
+    search: string;
+    loading: string;
+    error: string;
+    noResults: string;
+    allLanguages: string;
+    call: string;
+  };
+  health: {
+    nhiTitle: string;
+    clinicsTitle: string;
+    searchClinics: string;
+    interpreterOnly: string;
+    filterLanguage: string;
+    hasInterpreter: string;
+    noInterpreter: string;
+    symptomsTitle: string;
+    symptomsHint: string;
+    sayThis: string;
+    playMandarin: string;
+  };
+  safety: {
+    intro: string;
+    steps: string;
+  };
 };
 
 export const LOCALE_LABELS: Record<Locale, string> = {

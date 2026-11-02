@@ -27,6 +27,31 @@ const tl: Dictionary = {
   pages: {
     comingSoon: "Inihahanda pa ang seksyong ito. Gamitin ang Home para sa mabilisang access.",
   },
+  common: {
+    search: "Maghanap",
+    loading: "Naglo-load…",
+    error: "Hindi na-load ang data. Subukan ulit.",
+    noResults: "Walang klinikang tumugma.",
+    allLanguages: "Lahat ng wika",
+    call: "Tumawag",
+  },
+  health: {
+    nhiTitle: "NHI coverage",
+    clinicsTitle: "Directory ng klinika",
+    searchClinics: "Maghanap ng klinika ayon sa pangalan o lungsod",
+    interpreterOnly: "May interpreter",
+    filterLanguage: "I-filter ayon sa wika",
+    hasInterpreter: "May interpreter",
+    noInterpreter: "Walang listed na interpreter",
+    symptomsTitle: "Symptom translation card",
+    symptomsHint: "Pumili ng sintomas sa iyong wika, tapos ipakita o i-play ang Mandarin sa klinika.",
+    sayThis: "Sabihin ito sa Mandarin",
+    playMandarin: "I-play ang bigkas",
+  },
+  safety: {
+    intro: "Buksan ang card ng industriya para sa sunud-sunod na safety instructions.",
+    steps: "Mga hakbang",
+  },
 };
 
 export default tl;

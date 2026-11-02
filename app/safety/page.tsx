@@ -1,7 +1,7 @@
 "use client";
 
-import { PlaceholderPage } from "@/components/PlaceholderPage";
+import { SafetyGuides } from "@/components/safety/SafetyGuides";
 
 export default function SafetyPage() {
-  return <PlaceholderPage title={(d) => d.nav.safetyGuides} />;
+  return <SafetyGuides />;
 }

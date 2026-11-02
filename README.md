@@ -75,6 +75,8 @@ npm run typecheck
 
 ## Project layout
 
+Health (`/health`) and Safety (`/safety`) load clinics and guides from `/api/clinics` and `/api/guides`. Those routes query Postgres via Prisma and fall back to the seeded catalog if the database is unreachable.
+
 - `app/` — App Router pages and `app/api/` routes
 - `components/` — Header, bottom nav, dashboard cards, i18n provider
 - `dictionaries/` — UI strings (en, zh-TW, id, vi, tl, th)

@@ -27,6 +27,31 @@ const en: Dictionary = {
   pages: {
     comingSoon: "This section is being prepared. Use Home for quick access.",
   },
+  common: {
+    search: "Search",
+    loading: "Loading…",
+    error: "Could not load data. Try again.",
+    noResults: "No clinics match these filters.",
+    allLanguages: "All languages",
+    call: "Call",
+  },
+  health: {
+    nhiTitle: "NHI coverage",
+    clinicsTitle: "Clinic directory",
+    searchClinics: "Search clinics by name or city",
+    interpreterOnly: "Has interpreter",
+    filterLanguage: "Filter by language",
+    hasInterpreter: "Interpreter available",
+    noInterpreter: "No interpreter listed",
+    symptomsTitle: "Symptom translation card",
+    symptomsHint: "Tap a symptom in your language, then show or play Mandarin at the clinic.",
+    sayThis: "Say this in Mandarin",
+    playMandarin: "Play pronunciation",
+  },
+  safety: {
+    intro: "Open a workplace card for step-by-step safety instructions.",
+    steps: "Steps",
+  },
 };
 
 export default en;
