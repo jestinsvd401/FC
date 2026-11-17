@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Walnut serving board">
+  <rect width="800" height="800" fill="#efe6d8"/>
+  <ellipse cx="400" cy="430" rx="250" ry="168" fill="#6b3f24"/>
+  <ellipse cx="400" cy="418" rx="236" ry="154" fill="#8a5632"/>
+  <path d="M210 390c40 18 90 28 190 28s150-10 190-28" fill="none" stroke="#6a4124" stroke-width="10" opacity=".45"/>
+  <path d="M230 450c50 16 90 22 170 22s130-8 180-24" fill="none" stroke="#a56a3e" stroke-width="8" opacity=".35"/>
+  <circle cx="400" cy="250" r="28" fill="#efe6d8"/>
+  <circle cx="400" cy="250" r="16" fill="#6b3f24"/>
+</svg>

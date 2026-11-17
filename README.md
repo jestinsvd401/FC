@@ -1,1 +1,43 @@
-# FC
+# shop it.com
+
+A person-to-person marketplace with separate desks for visitors, buyers, sellers, and the platform admin.
+
+Visitors browse public listings. Buyers add products to a cart, confirm quantities, and submit orders. Sellers manage inventory and move each order through payment, packing, and shipment. The platform admin monitors transactions and manages users, without buying or selling.
+
+## Run
+
+```bash
+npm install
+npm run dev
+```
+
+The floor opens at http://127.0.0.1:5173. The API listens on port 3001. Without a database URL, sample data is created in `data/market.json` on first launch.
+
+To keep the same records in Supabase, set `SUPABASE_DB_URL` in `.env` to the transaction-pooler URL for the `shopit_app` role. The server then reads and writes the shopit tables in the project `thnsqfdwshhtktogjrmz`. Those tables have row level security forced on, and the public Data API roles have no access. The sample ledger is inserted the first time the server finds the tables empty.
+
+```bash
+npm test
+npm run build
+npm start
+```
+
+## Sample accounts
+
+Password for every sample account: `shopit-demo`
+
+| Person | Email | Role |
+| --- | --- | --- |
+| Maya Chen | maya@shopit.com | Platform admin |
+| Jonah Hale | jonah@shopit.com | Approved seller, Northwind Goods |
+| Priya Nair | priya@shopit.com | Approved seller, Field & Form |
+| Elena Voss | elena@shopit.com | Buyer |
+| Chris Adeyemi | chris@shopit.com | Buyer |
+| Sam Ortiz | sam@shopit.com | Seller waiting for approval |
+
+## Order trail
+
+Waiting for payment confirmation → Payment Confirmed → Ready to ship → Shipped → Completed
+
+The seller records payment, moves the order to Ready to Ship, prepares the product, and confirms shipment. The buyer marks the order completed after it arrives. The admin can read every step and cannot advance it.
+
+Completed transactions stay in the buyer purchase history, the seller sales history, and the platform ledger. They are not deleted. Sellers can download that history as CSV. Admins can search by order ID, filter by status or date, and review incomplete or stalled transactions.

@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "framework": null,
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/((?!assets/|products/|favicon\\.svg).*)", "destination": "/index.html" }
+  ],
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "dist/**"
+    }
+  }
+}

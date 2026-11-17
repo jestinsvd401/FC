@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Folded oat linen throw">
+  <rect width="800" height="800" fill="#e7e1d6"/>
+  <path d="M160 250h480l-40 320H200z" fill="#d9cbb6"/>
+  <path d="M190 300h430l-28 230H214z" fill="#efe4d2"/>
+  <path d="M210 360h380" stroke="#cbb89a" stroke-width="14"/>
+  <path d="M206 430h388" stroke="#cbb89a" stroke-width="14"/>
+  <path d="M200 500h392" stroke="#cbb89a" stroke-width="14"/>
+  <path d="M230 250l-20 70h50z" fill="#cfc0a8"/>
+</svg>
