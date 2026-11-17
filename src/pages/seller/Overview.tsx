@@ -24,7 +24,11 @@ export function SellerOverview() {
       .catch((err: Error) => setError(err.message));
   }, []);
 
-  const open = orders.filter((order) => order.status !== "completed");
+  const open = orders.filter(
+    (order) => order.status === "waiting_payment" || order.status === "payment_confirmed" || order.status === "ready_to_ship",
+  );
+  const payments = orders.filter((order) => order.status === "waiting_payment");
+  const toShip = orders.filter((order) => order.status === "payment_confirmed" || order.status === "ready_to_ship");
   const low = products.filter((product) => product.stockStatus !== "in_stock" && product.listingStatus !== "removed");
 
   return (
@@ -40,8 +44,16 @@ export function SellerOverview() {
       {error && <p className="error">{error}</p>}
       <div className="stats">
         <article>
-          <span>Open orders</span>
+          <span>Orders to process</span>
           <strong>{open.length}</strong>
+        </article>
+        <article>
+          <span>Payments to confirm</span>
+          <strong>{payments.length}</strong>
+        </article>
+        <article>
+          <span>Products to ship</span>
+          <strong>{toShip.length}</strong>
         </article>
         <article>
           <span>Listings</span>

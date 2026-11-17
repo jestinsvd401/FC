@@ -11,6 +11,7 @@ import {
   type OrderStatus,
 } from "../shared/marketplace.ts";
 import { hashPassword, newToken, verifyPassword } from "./auth.ts";
+import { reviewOrder, salesCsv, sellerLedger, taipeiDate } from "./records.ts";
 import { Store } from "./store.ts";
 import type { Order, Product, User } from "./types.ts";
 
@@ -86,6 +87,14 @@ function asPrice(value: unknown): number {
     throw new HttpError(400, "Price must be between $0.50 and $100,000.");
   }
   return cents(price);
+}
+
+function asDay(value: unknown): string {
+  if (value === undefined || value === "") return "";
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    throw new HttpError(400, "Use a real date.");
+  }
+  return value;
 }
 
 function asQuantity(value: unknown): number {
@@ -739,22 +748,32 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
     "/api/seller/sales",
     route((req, res) => {
       const user = requireRole(req, ["seller"]);
-      const orders = store.db.orders.filter((order) => order.seller.id === user.id);
-      const paid = orders.filter((order) => order.paymentStatus === "received");
-      const completed = orders.filter((order) => order.status === "completed");
-      const units = (list: Order[]) => list.reduce((sum, order) => sum + order.items.reduce((inner, item) => inner + item.quantity, 0), 0);
+      const orders = store.db.orders
+        .filter((order) => order.seller.id === user.id)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       res.json({
-        orders: orders.sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-        summary: {
-          orderCount: orders.length,
-          paidTotal: cents(paid.reduce((sum, order) => sum + order.total, 0)),
-          completedTotal: cents(completed.reduce((sum, order) => sum + order.total, 0)),
-          unitsSold: units(completed),
-          openCount: orders.filter((order) => order.status !== "completed").length,
-        },
+        orders,
+        summary: sellerLedger(orders),
+        retained: true,
       });
     }),
   );
+
+  app.get(
+    "/api/seller/sales.csv",
+    route((req, res) => {
+      const user = requireRole(req, ["seller"]);
+      const orders = store.db.orders.filter((order) => order.seller.id === user.id);
+      const filename = `${(user.shopName ?? "shop-it").toLowerCase().replace(/[^a-z0-9]+/g, "-")}-sales.csv`;
+      res.setHeader("content-type", "text/csv; charset=utf-8");
+      res.setHeader("content-disposition", `attachment; filename="${filename}"`);
+      res.send(salesCsv(orders));
+    }),
+  );
+
+  app.delete("/api/orders/:id", (_req, res) => {
+    res.status(405).json({ error: "Transaction records are kept. Completed sales stay in the buyer, seller, and platform histories." });
+  });
 
   app.get(
     "/api/orders/:id",
@@ -859,17 +878,28 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
   app.get(
     "/api/admin/orders",
     route((req, res) => {
-      const user = requireRole(req, ["admin"]);
-      void user;
+      requireRole(req, ["admin"]);
       const status = typeof req.query.status === "string" ? req.query.status : "";
-      const q = typeof req.query.q === "string" ? req.query.q.trim().toLowerCase().slice(0, 80) : "";
-      const orders = store.db.orders
+      if (status && !Object.hasOwn(ORDER_LABELS, status)) throw new HttpError(400, "Unknown transaction status.");
+      const orderId = typeof req.query.orderId === "string" ? req.query.orderId.trim().slice(0, 40) : "";
+      const from = asDay(req.query.from);
+      const to = asDay(req.query.to);
+      if (from && to && from > to) throw new HttpError(400, "The start date is after the end date.");
+      const attention = typeof req.query.attention === "string" ? req.query.attention : "";
+      if (attention && attention !== "incomplete" && attention !== "abnormal") {
+        throw new HttpError(400, "Choose incomplete or abnormal transactions.");
+      }
+      const reviewed = store.db.orders.map((order) => ({ ...order, ...reviewOrder(order) }));
+      const orders = reviewed
         .filter((order) => (status ? order.status === status : true))
-        .filter((order) =>
-          q
-            ? `${order.id} ${order.buyer.name} ${order.seller.name} ${order.seller.shopName ?? ""}`.toLowerCase().includes(q)
-            : true,
-        )
+        .filter((order) => (orderId ? order.id.toLowerCase().includes(orderId.toLowerCase()) : true))
+        .filter((order) => {
+          const day = taipeiDate(order.createdAt);
+          if (from && day < from) return false;
+          if (to && day > to) return false;
+          return true;
+        })
+        .filter((order) => (attention === "incomplete" ? order.incomplete : attention === "abnormal" ? order.abnormal : true))
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       const counts = Object.fromEntries(
         (Object.keys(ORDER_LABELS) as OrderStatus[]).map((key) => [
@@ -878,7 +908,15 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
         ]),
       );
       const volume = cents(store.db.orders.reduce((sum, order) => sum + order.total, 0));
-      res.json({ orders, counts, volume, monitorOnly: true });
+      res.json({
+        orders,
+        counts,
+        volume,
+        incompleteCount: reviewed.filter((order) => order.incomplete).length,
+        abnormalCount: reviewed.filter((order) => order.abnormal).length,
+        monitorOnly: true,
+        retained: true,
+      });
     }),
   );
 

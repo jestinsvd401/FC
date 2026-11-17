@@ -67,6 +67,9 @@ export interface MarketplaceOrder {
   createdAt: string;
   updatedAt: string;
   timeline: { status: OrderStatus; at: string; actorId: string; actorName: string; note: string }[];
+  incomplete?: boolean;
+  abnormal?: boolean;
+  flags?: string[];
 }
 
 export interface ActivityItem {

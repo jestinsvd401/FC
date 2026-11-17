@@ -45,7 +45,7 @@ export function Layout() {
         </form>
         <nav className="top-links">
           <Link to="/">Floor</Link>
-          {user?.role === "buyer" && <Link to="/orders">Orders</Link>}
+          {user?.role === "buyer" && <Link to="/orders">My orders</Link>}
           {user?.role === "buyer" && (
             <Link to="/cart">
               Cart <b>{cartCount}</b>
@@ -74,15 +74,15 @@ export function Layout() {
           </NavLink>
           <NavLink to="/sell/inventory">Inventory</NavLink>
           <NavLink to="/sell/products/new">Add product</NavLink>
-          <NavLink to="/sell/orders">Orders</NavLink>
-          <NavLink to="/sell/sales">Sales</NavLink>
+          <NavLink to="/sell/orders">Orders to process</NavLink>
+          <NavLink to="/sell/sales">Sales history</NavLink>
         </nav>
       )}
       {user?.role === "admin" && (
         <nav className="deskbar admin">
           <span>Platform desk</span>
           <NavLink to="/admin" end>
-            Transactions
+            All transactions
           </NavLink>
           <NavLink to="/admin/users">Users</NavLink>
           <NavLink to="/admin/activity">Activity</NavLink>

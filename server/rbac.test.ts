@@ -21,7 +21,12 @@ function client(base: string) {
     const setCookie = response.headers.getSetCookie();
     if (setCookie.length) cookie = setCookie.map((part) => part.split(";")[0]).join("; ");
     const text = await response.text();
-    return { status: response.status, data: text ? JSON.parse(text) : null };
+    if (!text) return { status: response.status, data: null };
+    try {
+      return { status: response.status, data: JSON.parse(text) };
+    } catch {
+      return { status: response.status, data: text };
+    }
   };
 }
 
@@ -216,6 +221,35 @@ describe("shop it.com roles and transaction flow", () => {
     const sellerSales = await pending("/api/seller/sales");
     assert.equal(sellerSales.status, 200);
     assert.ok(sellerSales.data.summary.completedTotal >= 30);
+    assert.ok(sellerSales.data.orders.some((item: { id: string; status: string }) => item.id === order.id && item.status === "completed"));
+    assert.equal(sellerSales.data.summary.completedOrders >= 1, true);
+
+    const buyerHistory = await buyer("/api/orders");
+    assert.ok(buyerHistory.data.orders.some((item: { id: string; status: string }) => item.id === order.id && item.status === "completed"));
+    const removed = await buyer(`/api/orders/${order.id}`, { method: "DELETE" });
+    assert.equal(removed.status, 405);
+    const stillThere = await buyer(`/api/orders/${order.id}`);
+    assert.equal(stillThere.status, 200);
+    assert.equal(stillThere.data.order.status, "completed");
+
+    const csv = await pending("/api/seller/sales.csv");
+    assert.equal(csv.status, 200);
+    assert.match(String(csv.data), new RegExp(order.id));
+    assert.equal((await buyer("/api/seller/sales.csv")).status, 403);
+    assert.equal((await admin(`/api/orders/${order.id}`, { method: "DELETE" })).status, 405);
+
+    const found = await admin(`/api/admin/orders?orderId=${order.id}`);
+    assert.equal(found.status, 200);
+    assert.equal(found.data.orders.length, 1);
+    assert.equal(found.data.orders[0].status, "completed");
+    assert.equal(found.data.retained, true);
+    const kept = await admin("/api/admin/orders?orderId=SI-18302");
+    assert.equal(kept.data.orders[0].status, "completed");
+    const attention = await admin("/api/admin/orders?attention=abnormal");
+    assert.ok(attention.data.orders.some((item: { id: string }) => item.id === "SI-18110"));
+    assert.ok(attention.data.orders.some((item: { id: string }) => item.id === "SI-18140"));
+    const dated = await admin("/api/admin/orders?from=2026-11-08&to=2026-11-08&orderId=SI-18302");
+    assert.equal(dated.data.orders.length, 1);
 
     const activity = await admin("/api/admin/activity");
     assert.equal(activity.status, 200);

@@ -6,12 +6,16 @@ import type { MarketplaceOrder } from "../../types";
 
 interface SalesResponse {
   orders: MarketplaceOrder[];
+  retained: boolean;
   summary: {
-    orderCount: number;
-    paidTotal: number;
+    monthLabel: string;
+    monthlyRevenue: number;
+    months: { month: string; label: string; revenue: number; completedOrders: number }[];
+    completedOrders: number;
+    pendingPayments: number;
+    pendingPaymentAmount: number;
+    waitingShipment: number;
     completedTotal: number;
-    unitsSold: number;
-    openCount: number;
   };
 }
 
@@ -25,33 +29,72 @@ export function Sales() {
       .catch((err: Error) => setError(err.message));
   }, []);
 
-  if (!data && !error) return <p className="loading">Loading sales…</p>;
+  async function downloadCsv() {
+    setError("");
+    const response = await fetch("/api/seller/sales.csv", { credentials: "include" });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as { error?: string };
+      setError(body.error || "Could not download the sales history.");
+      return;
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "shop-it-sales.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  if (!data && !error) return <p className="loading">Loading sales history…</p>;
 
   return (
     <section className="sheet">
-      <p className="eyebrow">Sales records</p>
-      <h1>What this shop has sold</h1>
+      <div className="section-head">
+        <div>
+          <p className="eyebrow">Seller</p>
+          <h1>Sales history</h1>
+        </div>
+        <button className="button" onClick={() => void downloadCsv()}>
+          Download CSV
+        </button>
+      </div>
+      <p>Every order for this shop stays in the sales history, including completed transactions.</p>
       {error && <p className="error">{error}</p>}
       {data && (
         <>
           <div className="stats">
             <article>
-              <span>Completed revenue</span>
-              <strong>{money(data.summary.completedTotal)}</strong>
+              <span>{data.summary.monthLabel} revenue</span>
+              <strong>{money(data.summary.monthlyRevenue)}</strong>
             </article>
             <article>
-              <span>Payment received</span>
-              <strong>{money(data.summary.paidTotal)}</strong>
+              <span>Completed orders</span>
+              <strong>{data.summary.completedOrders}</strong>
             </article>
             <article>
-              <span>Units completed</span>
-              <strong>{data.summary.unitsSold}</strong>
+              <span>Pending payments</span>
+              <strong>{data.summary.pendingPayments}</strong>
+              <small>{money(data.summary.pendingPaymentAmount)} waiting</small>
             </article>
             <article>
-              <span>Open orders</span>
-              <strong>{data.summary.openCount}</strong>
+              <span>Orders waiting for shipment</span>
+              <strong>{data.summary.waitingShipment}</strong>
             </article>
           </div>
+          {data.summary.months.length > 0 && (
+            <ul className="months">
+              {data.summary.months.map((month) => (
+                <li key={month.month}>
+                  <span>{month.label}</span>
+                  <b>{money(month.revenue)}</b>
+                  <small>
+                    {month.completedOrders} completed {month.completedOrders === 1 ? "order" : "orders"}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="table-wrap">
             <table>
               <thead>

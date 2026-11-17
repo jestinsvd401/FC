@@ -35,7 +35,7 @@ export function OrderView({
       <Stepper status={order.status} />
       {mode === "admin" && (
         <p className="monitor">
-          Monitoring only. A platform administrator can read this transaction and does not confirm payment, prepare goods, ship, or buy.
+          Monitoring only. This transaction stays in the platform records after it is completed. A platform administrator reads the buyer, seller, status, and amount, and does not confirm payment, prepare goods, ship, or buy.
         </p>
       )}
       <div className="order-grid">
@@ -90,7 +90,7 @@ export function OrderView({
       </div>
       {actions}
       <section>
-        <h2>Trail</h2>
+        <h2>{mode === "admin" ? "Transaction history" : mode === "buyer" ? "Order status" : "Fulfillment history"}</h2>
         <ol className="trail">
           {order.timeline.map((event, index) => (
             <li key={`${event.at}-${index}`}>

@@ -37,3 +37,5 @@ Password for every sample account: `shopit-demo`
 Waiting for payment confirmation → Payment Confirmed → Ready to ship → Shipped → Completed
 
 The seller records payment, moves the order to Ready to Ship, prepares the product, and confirms shipment. The buyer marks the order completed after it arrives. The admin can read every step and cannot advance it.
+
+Completed transactions stay in the buyer purchase history, the seller sales history, and the platform ledger. They are not deleted. Sellers can download that history as CSV. Admins can search by order ID, filter by status or date, and review incomplete or stalled transactions.
