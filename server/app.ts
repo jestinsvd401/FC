@@ -1,5 +1,6 @@
 import cookieParser from "cookie-parser";
 import express, { type NextFunction, type Request, type Response } from "express";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -118,7 +119,8 @@ function route(fn: (req: AuthedRequest, res: Response) => void) {
 export function createApp(options?: { dataFile?: string; seed?: boolean }) {
   const here = path.dirname(fileURLToPath(import.meta.url));
   const dataFile =
-    options?.dataFile ?? path.resolve(here, "../data/market.json");
+    options?.dataFile ??
+    (process.env.VERCEL ? "/tmp/shopit-market.json" : path.resolve(here, "../data/market.json"));
   const store = new Store(dataFile, options?.seed !== false);
   const app = express();
   app.disable("x-powered-by");
@@ -996,8 +998,11 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
     res.status(404).json({ error: "Not found." });
   });
 
-  if (process.env.NODE_ENV === "production") {
-    const dist = path.resolve(here, "../dist");
+  if (process.env.NODE_ENV === "production" || process.env.VERCEL) {
+    const dist =
+      [path.resolve(process.cwd(), "dist"), path.resolve(here, "../dist")].find((dir) =>
+        existsSync(path.join(dir, "index.html")),
+      ) ?? path.resolve(process.cwd(), "dist");
     app.use(express.static(dist));
     app.get("*", (req, res, next) => {
       if (req.path.startsWith("/api")) return next();
@@ -1021,6 +1026,7 @@ function cookieOptions() {
   return {
     httpOnly: true,
     sameSite: "lax" as const,
+    secure: Boolean(process.env.VERCEL),
     path: "/",
     maxAge: SESSION_MS,
   };
