@@ -11,7 +11,9 @@ npm install
 npm run dev
 ```
 
-The floor opens at http://127.0.0.1:5173. The API listens on port 3001. Sample data is created in `data/market.json` on first launch.
+The floor opens at http://127.0.0.1:5173. The API listens on port 3001. Without a database URL, sample data is created in `data/market.json` on first launch.
+
+To keep the same records in Supabase, set `SUPABASE_DB_URL` in `.env` to the transaction-pooler URL for the `shopit_app` role. The server then reads and writes the shopit tables in the project `thnsqfdwshhtktogjrmz`. Those tables have row level security forced on, and the public Data API roles have no access. The sample ledger is inserted the first time the server finds the tables empty.
 
 ```bash
 npm test

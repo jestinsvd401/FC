@@ -13,6 +13,7 @@ import {
 } from "../shared/marketplace.js";
 import { hashPassword, newToken, verifyPassword } from "./auth.js";
 import { reviewOrder, salesCsv, sellerLedger, taipeiDate } from "./records.js";
+import { loadEnv } from "./env.js";
 import { Store } from "./store.js";
 import type { Order, Product, User } from "./types.js";
 
@@ -106,26 +107,29 @@ function asQuantity(value: unknown): number {
   return quantity;
 }
 
-function route(fn: (req: AuthedRequest, res: Response) => void) {
+function route(fn: (req: AuthedRequest, res: Response) => unknown) {
   return (req: Request, res: Response, next: NextFunction) => {
-    try {
-      fn(req as AuthedRequest, res);
-    } catch (error) {
-      next(error);
-    }
+    Promise.resolve()
+      .then(() => fn(req as AuthedRequest, res))
+      .catch(next);
   };
 }
 
 export function createApp(options?: { dataFile?: string; seed?: boolean }) {
+  loadEnv();
   const here = path.dirname(fileURLToPath(import.meta.url));
   const dataFile =
     options?.dataFile ??
     (process.env.VERCEL ? "/tmp/shopit-market.json" : path.resolve(here, "../data/market.json"));
-  const store = new Store(dataFile, options?.seed !== false);
+  const remoteUrl = options?.dataFile ? "" : process.env.SUPABASE_DB_URL ?? "";
+  const store = new Store(dataFile, options?.seed !== false, remoteUrl);
   const app = express();
   app.disable("x-powered-by");
   app.use(express.json({ limit: "2mb" }));
   app.use(cookieParser());
+  app.use((_req, _res, next) => {
+    store.refresh().then(() => next()).catch(next);
+  });
 
   function currentUser(req: Request): User | null {
     const token = req.cookies?.shopit_session;
@@ -257,12 +261,12 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
   }
 
   app.get("/api/health", (_req, res) => {
-    res.json({ ok: true, name: "shop it.com" });
+    res.json({ ok: true, name: "shop it.com", storage: store.remote ? "supabase" : "file" });
   });
 
   app.post(
     "/api/auth/register",
-    route((req, res) => {
+    route(async (req, res) => {
       const name = asText(req.body?.name, "Name", 2, 60);
       const email = asText(req.body?.email, "Email", 6, 120).toLowerCase();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpError(400, "Enter a valid email.");
@@ -276,7 +280,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
       const address = req.body?.address ? asAddress(req.body.address) : null;
       let createdUser!: User;
       let token = "";
-      store.update((db) => {
+      await store.update((db) => {
         if (db.users.some((user) => user.email === email)) {
           throw new HttpError(400, "An account with that email already exists.");
         }
@@ -311,7 +315,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.post(
     "/api/auth/login",
-    route((req, res) => {
+    route(async (req, res) => {
       const email = asText(req.body?.email, "Email", 6, 120).toLowerCase();
       const password = asText(req.body?.password, "Password", 8, 80);
       const user = store.db.users.find((item) => item.email === email);
@@ -320,7 +324,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
       }
       if (user.suspended) throw new HttpError(403, "This account is suspended.");
       const token = newToken();
-      store.update((db) => {
+      await store.update((db) => {
         db.sessions.push({ token, userId: user.id, createdAt: new Date().toISOString() });
       });
       res.cookie("shopit_session", token, cookieOptions());
@@ -330,10 +334,10 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.post(
     "/api/auth/logout",
-    route((req, res) => {
+    route(async (req, res) => {
       const token = req.cookies?.shopit_session;
       if (typeof token === "string") {
-        store.update((db) => {
+        await store.update((db) => {
           db.sessions = db.sessions.filter((session) => session.token !== token);
         });
       }
@@ -344,14 +348,14 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/auth/me",
-    route((req, res) => {
+    route(async (req, res) => {
       res.json({ user: req.user ? publicUser(req.user) : null });
     }),
   );
 
   app.get(
     "/api/products",
-    route((req, res) => {
+    route(async (req, res) => {
       const q = typeof req.query.q === "string" ? req.query.q.trim().toLowerCase().slice(0, 80) : "";
       const category = typeof req.query.category === "string" ? req.query.category : "";
       const products = store.db.products
@@ -369,7 +373,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/products/:id",
-    route((req, res) => {
+    route(async (req, res) => {
       const product = store.db.products.find((item) => item.id === req.params.id);
       if (!product || product.listingStatus !== "active") throw new HttpError(404, "Product not found.");
       res.json({ product: presentProduct(product, false) });
@@ -378,7 +382,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/seller/products",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["seller"]);
       const products = store.db.products
         .filter((product) => product.sellerId === user.id)
@@ -389,7 +393,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/seller/products/:id",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["seller"]);
       const product = store.db.products.find((item) => item.id === req.params.id && item.sellerId === user.id);
       if (!product) throw new HttpError(404, "Product not found.");
@@ -399,12 +403,12 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.post(
     "/api/seller/products",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["seller"]);
       approvedSeller(user);
       const input = readProductInput(req.body ?? {}, true);
       let created!: Product;
-      store.update((db) => {
+      await store.update((db) => {
         created = {
           id: `p_${newToken().slice(0, 8)}`,
           sellerId: user.id,
@@ -431,12 +435,12 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.patch(
     "/api/seller/products/:id",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["seller"]);
       approvedSeller(user);
       const input = readProductInput({ ...req.body, image: req.body?.image || undefined }, false);
       let updated!: Product;
-      store.update((db) => {
+      await store.update((db) => {
         const product = db.products.find((item) => item.id === req.params.id && item.sellerId === user.id);
         if (!product) throw new HttpError(404, "Product not found.");
         if (product.listingStatus === "removed") {
@@ -463,12 +467,12 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.patch(
     "/api/seller/products/:id/quantity",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["seller"]);
       approvedSeller(user);
       const quantity = asQuantity(req.body?.quantity);
       let updated!: Product;
-      store.update((db) => {
+      await store.update((db) => {
         const product = db.products.find((item) => item.id === req.params.id && item.sellerId === user.id);
         if (!product) throw new HttpError(404, "Product not found.");
         if (product.listingStatus === "removed") throw new HttpError(400, "Removed listings cannot be restocked.");
@@ -487,7 +491,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.post(
     "/api/seller/products/:id/visibility",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["seller"]);
       approvedSeller(user);
       const action = req.body?.action;
@@ -495,7 +499,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
         throw new HttpError(400, "Choose hide, unhide, or remove.");
       }
       let updated!: Product;
-      store.update((db) => {
+      await store.update((db) => {
         const product = db.products.find((item) => item.id === req.params.id && item.sellerId === user.id);
         if (!product) throw new HttpError(404, "Product not found.");
         if (action === "remove") {
@@ -547,7 +551,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/cart",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["buyer"]);
       const items = enrichCart(user.id);
       const subtotal = cents(items.reduce((sum, item) => sum + item.lineTotal, 0));
@@ -557,12 +561,12 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.post(
     "/api/cart",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["buyer"]);
       const productId = asText(req.body?.productId, "Product", 2, 40);
       const quantity = asQuantity(req.body?.quantity);
       if (quantity < 1) throw new HttpError(400, "Select a quantity of at least 1.");
-      store.update((db) => {
+      await store.update((db) => {
         const product = db.products.find((item) => item.id === productId);
         if (!product || product.listingStatus !== "active") throw new HttpError(404, "Product not found.");
         const cart = db.carts[user.id] ?? [];
@@ -586,11 +590,11 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.put(
     "/api/cart",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["buyer"]);
       const productId = asText(req.body?.productId, "Product", 2, 40);
       const quantity = asQuantity(req.body?.quantity);
-      store.update((db) => {
+      await store.update((db) => {
         const cart = db.carts[user.id] ?? [];
         const existing = cart.find((item) => item.productId === productId);
         if (!existing) throw new HttpError(404, "That item is not in the cart.");
@@ -610,9 +614,9 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.delete(
     "/api/cart/:productId",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["buyer"]);
-      store.update((db) => {
+      await store.update((db) => {
         db.carts[user.id] = (db.carts[user.id] ?? []).filter((item) => item.productId !== req.params.productId);
       });
       const items = enrichCart(user.id);
@@ -622,7 +626,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.post(
     "/api/orders",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["buyer"]);
       if (req.body?.quantitiesConfirmed !== true) {
         throw new HttpError(400, "Confirm the quantities before submitting the order.");
@@ -640,7 +644,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
       }
 
       const created: Order[] = [];
-      store.update((db) => {
+      await store.update((db) => {
         const resolved: { product: Product; seller: User; quantity: number }[] = lines.map((line: { productId: string; quantity: number }) => {
           const product = db.products.find((item) => item.id === line.productId);
           if (!product || product.listingStatus !== "active") {
@@ -726,7 +730,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/orders",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["buyer"]);
       const orders = store.db.orders
         .filter((order) => order.buyer.id === user.id)
@@ -737,7 +741,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/seller/orders",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["seller"]);
       const orders = store.db.orders
         .filter((order) => order.seller.id === user.id)
@@ -748,7 +752,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/seller/sales",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["seller"]);
       const orders = store.db.orders
         .filter((order) => order.seller.id === user.id)
@@ -763,7 +767,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/seller/sales.csv",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireRole(req, ["seller"]);
       const orders = store.db.orders.filter((order) => order.seller.id === user.id);
       const filename = `${(user.shopName ?? "shop-it").toLowerCase().replace(/[^a-z0-9]+/g, "-")}-sales.csv`;
@@ -779,7 +783,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/orders/:id",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireUser(req);
       const order = findOrder(req.params.id);
       if (!canSeeOrder(user, order)) throw new HttpError(404, "Order not found.");
@@ -789,7 +793,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.post(
     "/api/orders/:id/advance",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireUser(req);
       if (user.role === "admin") {
         throw new HttpError(403, "Platform administrators monitor transactions and do not act as the buyer or seller.");
@@ -800,7 +804,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
       approvedSeller(user);
       const action = req.body?.action;
       let updated!: Order;
-      store.update((db) => {
+      await store.update((db) => {
         const order = db.orders.find((item) => item.id === req.params.id);
         if (!order || order.seller.id !== user.id) throw new HttpError(404, "Order not found.");
         const now = new Date().toISOString();
@@ -848,14 +852,14 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.post(
     "/api/orders/:id/complete",
-    route((req, res) => {
+    route(async (req, res) => {
       const user = requireUser(req);
       if (user.role === "admin") {
         throw new HttpError(403, "Platform administrators monitor transactions and do not act as the buyer or seller.");
       }
       if (user.role !== "buyer") throw new HttpError(403, "The buyer confirms completion after shipment.");
       let updated!: Order;
-      store.update((db) => {
+      await store.update((db) => {
         const order = db.orders.find((item) => item.id === req.params.id);
         if (!order || order.buyer.id !== user.id) throw new HttpError(404, "Order not found.");
         if (order.status !== "shipped") {
@@ -879,7 +883,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/admin/orders",
-    route((req, res) => {
+    route(async (req, res) => {
       requireRole(req, ["admin"]);
       const status = typeof req.query.status === "string" ? req.query.status : "";
       if (status && !Object.hasOwn(ORDER_LABELS, status)) throw new HttpError(400, "Unknown transaction status.");
@@ -924,7 +928,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/admin/users",
-    route((req, res) => {
+    route(async (req, res) => {
       requireRole(req, ["admin"]);
       const users = store.db.users
         .map(publicUser)
@@ -935,7 +939,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.patch(
     "/api/admin/users/:id",
-    route((req, res) => {
+    route(async (req, res) => {
       const admin = requireRole(req, ["admin"]);
       if (req.body?.role === "admin" || req.body?.action === "approve_admin") {
         throw new HttpError(403, "Platform administrator access cannot be granted from the user desk.");
@@ -945,7 +949,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
         throw new HttpError(400, "Unknown user action.");
       }
       let updated!: User;
-      store.update((db) => {
+      await store.update((db) => {
         const target = db.users.find((item) => item.id === req.params.id);
         if (!target) throw new HttpError(404, "User not found.");
         if (target.role === "admin") {
@@ -987,7 +991,7 @@ export function createApp(options?: { dataFile?: string; seed?: boolean }) {
 
   app.get(
     "/api/admin/activity",
-    route((req, res) => {
+    route(async (req, res) => {
       requireRole(req, ["admin"]);
       const activity = [...store.db.activities].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 200);
       res.json({ activity });
