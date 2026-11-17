@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, describe, it } from "node:test";
 import type { AddressInfo } from "node:net";
-import { createApp } from "./app.ts";
+import { createApp } from "./app.js";
 
 function client(base: string) {
   let cookie = "";

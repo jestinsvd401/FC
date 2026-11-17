@@ -10,11 +10,11 @@ import {
   type Address,
   type ListingStatus,
   type OrderStatus,
-} from "../shared/marketplace.ts";
-import { hashPassword, newToken, verifyPassword } from "./auth.ts";
-import { reviewOrder, salesCsv, sellerLedger, taipeiDate } from "./records.ts";
-import { Store } from "./store.ts";
-import type { Order, Product, User } from "./types.ts";
+} from "../shared/marketplace.js";
+import { hashPassword, newToken, verifyPassword } from "./auth.js";
+import { reviewOrder, salesCsv, sellerLedger, taipeiDate } from "./records.js";
+import { Store } from "./store.js";
+import type { Order, Product, User } from "./types.js";
 
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
 const IMAGE_DATA =

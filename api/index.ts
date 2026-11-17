@@ -1,5 +1,8 @@
-import { createApp } from "../server/app.ts";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { createApp } from "../server/app.js";
 
 const app = createApp();
 
-export default app;
+export default function handler(req: IncomingMessage, res: ServerResponse) {
+  return app(req, res);
+}

@@ -1,6 +1,6 @@
-import type { Address } from "../shared/marketplace.ts";
-import { hashPassword } from "./auth.ts";
-import type { DB, Order, Product, User } from "./types.ts";
+import type { Address } from "../shared/marketplace.js";
+import { hashPassword } from "./auth.js";
+import type { DB, Order, Product, User } from "./types.js";
 
 const DEMO_PASSWORD = "shopit-demo";
 

@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { buildSeed } from "./seed.ts";
-import { emptyDb, type DB } from "./types.ts";
+import { buildSeed } from "./seed.js";
+import { emptyDb, type DB } from "./types.js";
 
 export class Store {
   db: DB;

@@ -1,4 +1,4 @@
-import type { Order } from "./types.ts";
+import type { Order } from "./types.js";
 
 const TAIPEI = "Asia/Taipei";
 const DAY = 86_400_000;

@@ -5,7 +5,7 @@ import type {
   PaymentStatus,
   Role,
   SellerStatus,
-} from "../shared/marketplace.ts";
+} from "../shared/marketplace.js";
 
 export interface User {
   id: string;
